@@ -1,0 +1,4 @@
+planner
+*.o
+*.dSYM/
+.DS_Store
