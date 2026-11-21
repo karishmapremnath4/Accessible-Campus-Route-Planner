@@ -19,8 +19,10 @@ Course project for EECE 7205, Fundamentals of Computer Engineering.
 1. Load campus building and pathway data from a file at startup.
 2. Display the list of all campus buildings.
 3. Accept a starting building, a destination building, and an accessibility preference.
-4. Calculate the shortest route that satisfies the preference, avoiding stairs when
-   requested and skipping closed pathways.
+4. Calculate the shortest route that satisfies the preference. Three
+   preferences are supported: the shortest route overall, a route that avoids
+   stairs, and a route that favours the campus tunnels. Closed pathways are
+   skipped under all three.
 5. Display the recommended route, building by building, with the total distance.
 6. Report clearly when no route satisfies the selected preference.
 7. Compare Dijkstra's algorithm and A* search on the same route request.
@@ -39,18 +41,27 @@ Course project for EECE 7205, Fundamentals of Computer Engineering.
 g++ -std=c++17 -Wall -Wextra -o planner src/*.cpp
 ```
 
+This is the command the finished program will be built with. It does not link
+yet, because `main()` has not been written. Until then the code that exists can
+be compiled on its own:
+
+```
+g++ -std=c++17 -Wall -Wextra -I src -c src/graph.cpp -o graph.o
+```
+
 ## Run
 
 ```
 ./planner
 ```
 
-The program reads its campus data from `data/` at startup.
+Run the program from the top of the repository, because it reads its campus
+data from `data/` using relative paths.
 
 ## Sample input and output
 
-Not yet available. A sample session will be added once the menu and the first search
-algorithm are implemented.
+Not yet available. A sample session will be added once the menu and the first
+search algorithm are implemented.
 
 ## Repository structure
 
@@ -72,7 +83,8 @@ request for the other member to review before merging.
 
 ## Current progress
 
-Iteration 1, project proposal. Design complete, implementation not yet started.
+Iteration 3. The campus dataset and the file loading are complete. The search
+algorithms and the menu are not yet implemented.
 
 - [x] Problem definition, features, expected inputs and outputs
 - [x] Data structures selected and justified
@@ -80,12 +92,43 @@ Iteration 1, project proposal. Design complete, implementation not yet started.
 - [x] Pseudocode for the main program flow and for Dijkstra's algorithm
 - [x] Initial testing plan, 8 test cases
 - [x] Repository created and branch structure set up
-- [ ] Campus dataset prepared
-- [ ] File loading and graph construction
+- [x] Campus dataset prepared
+- [x] File loading and graph construction
 - [ ] Dijkstra's algorithm
 - [ ] A* search
 - [ ] Menu interface and input validation
 - [ ] Algorithm comparison
+
+The dataset holds 39 campus buildings and 151 pathways. It was prepared in
+early November and committed to this repository on 20 November. Building
+positions come from OpenStreetMap and 139 of the 151 distances were measured
+by routing over the OpenStreetMap pedestrian network. See `data/README.md`
+for the format and the source of every distance.
+
+`loadCampusData()` reads both files into an adjacency list of 39 buildings and
+302 directed entries, since each pathway is stored in both directions. Ten
+building pairs have two routes between them, such as Snell Library to Curry
+Student Center across the plaza or through the tunnel, and both are kept.
+
+The data structures the routing algorithms use are implemented in this project
+rather than taken from the Standard Library. `DynamicArray` replaces
+`std::vector`, and the priority queue will be a binary min-heap rather than
+`std::priority_queue`. The Standard Library is used only for console and file
+input and output, text, and the square root function.
+
+## Known limitations
+
+- Eleven of the 151 distances are estimates rather than measurements: nine
+  tunnel segments and the two routes over the ISEC pedestrian bridge, none of
+  which OpenStreetMap maps. They are marked `estimated` in the `source` column.
+- Sixteen buildings are positioned at the centre of the building rather than at
+  an entrance, because OpenStreetMap records no entrance for them, so distances
+  involving them read slightly long.
+- Only one pathway is marked as having stairs. Deriving the flag automatically
+  from OpenStreetMap was attempted and abandoned, as described in the project
+  report.
+- `DynamicArray::operator[]` does not check bounds. Index validation is done by
+  the caller.
 
 ## Future improvements
 
