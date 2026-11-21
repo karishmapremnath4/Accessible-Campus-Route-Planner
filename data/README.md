@@ -1,7 +1,7 @@
 # Campus data
 
 Two CSV files describe the campus graph. Buildings are the vertices, pathways
-are the edges.
+are the edges. The graph holds 39 buildings and 151 pathways.
 
 ## buildings.csv
 
@@ -19,10 +19,16 @@ are the edges.
   centroid of Snell Library, 42.3383406, -71.0879537. These are the columns
   the program uses, because the A* heuristic needs distances in meters.
 
-Most buildings are placed at their mapped main entrance. Six have no entrance
-recorded in OpenStreetMap and sit at the centre of the building instead, so
-distances involving them read slightly long: Behrakis, Hurtig, Hastings,
-West Village C, F and H.
+Buildings 0 to 22 are placed at their mapped main entrance where
+OpenStreetMap records one. Six of those have no entrance recorded and sit at
+the centre of the building instead: Behrakis, Hurtig, Hastings, West Village
+C, F and H. Buildings 23 to 38 were added later and all sit at the centre of
+the building, so distances involving them read slightly long.
+
+Every building is matched to a distinct point on the walkway network. Dana
+Research Center is physically attached to the Forsyth Building, so its walking
+distance to Forsyth is the route around the outside rather than the internal
+connection.
 
 ## pathways.csv
 
@@ -50,7 +56,7 @@ West Village C, F and H.
 A pair of buildings may appear on more than one row. That is deliberate: it
 represents two genuinely different ways of making the same trip. Snell Library
 to ISEC has a 530 m route with stairs and a 560 m step-free route using the
-lift. Eight pairs have both a surface route and a tunnel route.
+lift. Nine pairs have both a surface route and a tunnel route.
 
 ## Accessibility preferences
 
