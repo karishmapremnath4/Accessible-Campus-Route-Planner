@@ -58,6 +58,18 @@ represents two genuinely different ways of making the same trip. Snell Library
 to ISEC has a 530 m route with stairs and a 560 m step-free route using the
 lift. Nine pairs have both a surface route and a tunnel route.
 
+## Closed pathways
+
+One pathway is marked closed in `pathways.csv`: the surface path between Snell
+Library and Curry Student Center. Routing between those two buildings
+therefore returns the 86 m tunnel rather than the 72 m walk across the plaza,
+which is what the closure handling is meant to do.
+
+`test_no_route_pathways.csv` is a test fixture, not program data. It is a copy
+of `pathways.csv` with both of EXP's pathways closed, so that EXP becomes
+unreachable and the program must report that no route is available. Pass it to
+`loadCampusData()` in place of `pathways.csv` to exercise that case.
+
 ## Accessibility preferences
 
 The program filters and weights pathways according to the preference the user
