@@ -1,5 +1,5 @@
 from,to,distance,has_stairs,is_closed,is_indoor,source
-0,1,72,0,0,0,osm_routed
+0,1,72,0,1,0,osm_routed
 0,1,86,0,0,1,estimated
 0,2,227,0,0,0,osm_routed
 0,2,246,0,0,1,estimated
