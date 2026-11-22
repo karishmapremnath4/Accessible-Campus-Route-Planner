@@ -10,8 +10,8 @@ struct Building {
     int id;
     std::string code;   // the code Northeastern uses, e.g. SL for Snell Library
     std::string name;
-    double x;           // meters east of Snell Library
-    double y;           // meters north of Snell Library
+    double x;           // meters east of the centre of Snell Library
+    double y;           // meters north of the centre of Snell Library
 };
 
 // One pathway leading out of a building. Each row of pathways.csv becomes two
@@ -46,8 +46,9 @@ struct Graph {
     DynamicArray< DynamicArray<Edge> > adj;
 };
 
-// Reads both CSV files and fills g. Returns false and prints a message if a
-// file cannot be opened or a line is not valid.
+// Reads both CSV files into g, replacing anything already in it. Returns false
+// and prints a message if a file cannot be opened or a line is not valid; g is
+// then left unchanged.
 bool loadCampusData(const std::string& buildingsFile,
                     const std::string& pathwaysFile,
                     Graph& g);
@@ -56,11 +57,13 @@ bool loadCampusData(const std::string& buildingsFile,
 bool isPathAccessible(const Edge& e, Preference pref);
 
 // What this pathway costs the search. Always its real distance, except under
-// INDOOR_PREFERRED where an outdoor pathway is weighted so tunnels win.
+// INDOOR_PREFERRED where an outdoor pathway is weighted so tunnels win. The
+// distance shown to the user must be the real one, e.distance, not this cost.
 double pathCost(const Edge& e, Preference pref);
 
 // Straight-line distance between two buildings, in meters. Used by A* to
-// estimate how far is left to go.
+// estimate how far is left to go, and by loadCampusData to check that no
+// pathway is shorter than this.
 double heuristic(const Graph& g, int from, int to);
 
 #endif
