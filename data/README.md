@@ -14,8 +14,10 @@ the edges. 39 buildings and 151 pathways.
 - `name` - full building name.
 - `lat`, `lon` - latitude and longitude. Kept so a row can be checked on a
   map. The program does not read these.
-- `x`, `y` - position in meters. x is east, y is north. The origin is Snell
-  Library at 42.3383406, -71.0879537. The program uses these because A* needs
+- `x`, `y` - position in meters, rounded to the nearest meter. x is east, y
+  is north. The origin is the centre of Snell Library, at 42.3383406,
+  -71.0879537. Snell Library's own row is at its main entrance, so it sits at
+  (-17, 17) rather than (0, 0). The program uses these because A* needs
   distances in meters.
 
 To convert:
@@ -50,11 +52,11 @@ between them is the walk around the outside, not the way through.
   - `google_maps` - read from Google Maps walking directions. 1 row, Snell
     Library to Churchill Hall, where the routed figure did not match.
   - `estimated` - no measured source. 11 rows: the nine tunnels and the two
-    routes over the ISEC bridge, none of which OpenStreetMap maps. Tunnel
-    distances are the surface distance for the same pair plus about 15 m for
-    going down and back up, since a tunnel runs under the buildings and cannot
-    be shorter than the walk above. The two bridge routes are 1.6 times the
-    straight-line distance.
+    routes over the ISEC bridge, none of which OpenStreetMap maps. Each tunnel
+    distance is the surface distance for the same pair plus 5 to 19 m (15 m
+    for most) for going down and back up, since a tunnel runs under the
+    buildings and cannot be shorter than the walk above. The two bridge routes
+    are estimates of the walk from Snell Library over the bridge to ISEC.
 
 Ten pairs of buildings appear on two rows, because there are two different
 ways to make the trip. Snell Library to ISEC has a 530 m route with stairs and
@@ -67,23 +69,35 @@ One pathway is closed: the surface path between Snell Library and Curry
 Student Center. Routing between them returns the 86 m tunnel instead of the
 72 m walk across the plaza.
 
-`test_no_route_pathways.csv` is a test file, not program data. It is a copy of
-pathways.csv with both of EXP's pathways closed, so EXP cannot be reached and
-the program has to say there is no route.
+## Test files
+
+These are not program data. `tests/tests.cpp` loads both of them.
+
+- `test_no_route_pathways.csv` - a copy of pathways.csv with both of EXP's
+  pathways closed, so EXP cannot be reached and the program has to say there
+  is no route.
+- `test_stairs_only_pathways.csv` - a copy of pathways.csv with both of EXP's
+  pathways marked as having stairs, so EXP can be reached normally but not
+  under NO_STAIRS, and the program has to say there is no step-free route.
 
 ## Accessibility preferences
 
 - STANDARD - shortest route, skipping closed pathways.
 - NO_STAIRS - also skips any pathway with steps.
 - INDOOR_PREFERRED - outdoor pathways cost 1.5 times their distance, so
-  tunnels win when they are not much longer. Nothing is excluded.
+  tunnels win when they are not much longer. Nothing else is excluded.
+
+Closed pathways are skipped under all three preferences. The distance shown
+to the user is always the real walking distance, not the 1.5 weighted cost.
 
 ## Rule that must hold
 
 No pathway may be shorter than the straight-line distance between the two
 buildings it joins. A* estimates the distance left to go as a straight line,
 and if a pathway were shorter than that the estimate would be too high and A*
-could return a route that is not the shortest. All 151 rows were checked.
+could return a route that is not the shortest. All 151 rows were checked,
+and `loadCampusData()` checks every row again when it loads the file and stops
+with an error if one breaks the rule.
 
 ## Sources
 
