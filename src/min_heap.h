@@ -49,8 +49,15 @@ struct MinHeap {
 
     // Take the item at the front, which is the smallest. Move the last item
     // into its place and push it down while it is larger than its smaller
-    // child.
+    // child. Check empty() before calling this: popping an empty heap returns
+    // an item with building -1 and leaves the heap unchanged.
     HeapItem pop() {
+        if (empty()) {
+            HeapItem none;
+            none.building = -1;
+            none.priority = 0.0;
+            return none;
+        }
         HeapItem smallest = items[0];
         items[0] = items[items.size - 1];
         items.size--;
