@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cmath>
 
 // Turns text into an int. Returns false if the text is not a whole number,
 // so that a bad file produces a clear message instead of an exception.
@@ -215,4 +216,30 @@ bool loadCampusData(const std::string& buildingsFile,
     }
 
     return true;
+}
+
+// A pathway cannot be used if it is closed. If the user asked to avoid
+// stairs, a pathway with steps cannot be used either. INDOOR_PREFERRED does
+// not rule anything out; it changes the cost instead, in pathCost below.
+bool isPathAccessible(const Edge& e, Preference pref) {
+    if (e.isClosed) {
+        return false;
+    }
+    if (pref == NO_STAIRS && e.hasStairs) {
+        return false;
+    }
+    return true;
+}
+
+double pathCost(const Edge& e, Preference pref) {
+    if (pref == INDOOR_PREFERRED && !e.isIndoor) {
+        return e.distance * OUTDOOR_WEIGHT;
+    }
+    return e.distance;
+}
+
+double heuristic(const Graph& g, int from, int to) {
+    double dx = g.buildings[from].x - g.buildings[to].x;
+    double dy = g.buildings[from].y - g.buildings[to].y;
+    return std::sqrt(dx * dx + dy * dy);
 }

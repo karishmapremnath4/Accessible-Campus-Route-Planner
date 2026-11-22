@@ -1,72 +1,51 @@
 # Time and space complexity
 
-## Variables and assumptions
+V = number of buildings = 39
+E = number of pathways = 151
 
-- V is the number of buildings. In the current dataset V = 39.
-- E is the number of pathways. In the current dataset E = 151. Each pathway is
-  stored twice, once in each direction, so the adjacency list holds 2E = 302
-  entries.
-- The graph is connected, so E >= V - 1.
-- A pathway that is closed, or that has stairs when the user asked to avoid
-  stairs, is skipped during relaxation. It is still stored, so it still counts
-  towards E.
-- Both searches stop as soon as the destination is removed from the priority
-  queue.
-- Distances are doubles, so comparing or adding two of them is one operation.
+Each pathway is stored twice, once in each direction, so the adjacency list
+holds 302 entries. The graph is connected. Both searches stop as soon as the
+destination comes off the queue.
 
 ## DynamicArray
 
 | Operation | Best | Worst |
 | --- | --- | --- |
-| `push_back` | Theta(1) | Theta(n) |
-| `push_back`, amortised over n calls | Theta(1) | Theta(1) |
-| `operator[]` | Theta(1) | Theta(1) |
-| copy constructor, copy assignment | Theta(n) | Theta(n) |
-| destructor | Theta(1) | Theta(1) |
+| push_back | Theta(1) | Theta(n) |
+| push_back over n calls | Theta(1) each | Theta(1) each |
+| operator[] | Theta(1) | Theta(1) |
+| copy | Theta(n) | Theta(n) |
 
-A single `push_back` is Theta(n) in the worst case because when the block is
-full it allocates a block twice as large and copies all n items across. That
-happens only when n reaches the capacity. Since the capacity doubles, the
-copying cost is spread over the pushes that follow, so n pushes cost
-Theta(n) in total and each push costs Theta(1) on average.
+push_back is Theta(n) when the array is full, because it has to copy
+everything into a bigger block. The capacity doubles each time, so this gets
+rarer as the array grows. Over n pushes the total work is Theta(n), which is
+Theta(1) per push on average.
 
-Space is Theta(capacity), which stays below 2n.
+Space is Theta(n).
 
 ## MinHeap
 
-The priority queue is a binary min-heap stored in a DynamicArray. For a heap
-holding n items:
+n = number of items in the heap.
 
 | Operation | Best | Worst |
 | --- | --- | --- |
-| `push` | Theta(1) | Theta(log n) |
-| `pop` | Theta(1) | Theta(log n) |
-| `empty` | Theta(1) | Theta(1) |
+| push | Theta(1) | Theta(log n) |
+| pop | Theta(1) | Theta(log n) |
+| empty | Theta(1) | Theta(1) |
 
-`push` puts the item at the end and moves it up while it is smaller than its
-parent. The height of the heap is Theta(log n), so that is the worst case. The
-best case is Theta(1), when the item is already larger than its parent and
-does not move.
-
-`pop` takes the item at the front, moves the last item there, and moves it
-down while it is larger than its smaller child. Again the worst case is the
-height, Theta(log n).
+The heap is a tree of height log n. push moves an item up at most that far,
+pop moves one down at most that far. Best case is when the item does not move.
 
 Space is Theta(n).
 
 ## loadCampusData
 
-Reading both files is Theta(V + E).
+Theta(V + E) time and Theta(V + E) space.
 
-Each line is read once and split into a fixed number of fields, which is
-Theta(1) per line. There are V lines in buildings.csv and E lines in
-pathways.csv. Each pathway line causes two `push_back` calls, which are
-Theta(1) amortised.
+Each line is read once and split into 7 fields. There are V lines in
+buildings.csv and E lines in pathways.csv.
 
-Space is Theta(V + E): Theta(V) for the buildings and Theta(E) for the
-adjacency list.
-
-## Dijkstra's algorithm
+## Dijkstra
 
 | Case | Bound |
 | --- | --- |
@@ -74,43 +53,27 @@ adjacency list.
 | Best | Theta(1) |
 | Space | Theta(V + E) |
 
-Worst case: the destination is the last building removed from the queue, so
-every building is pushed and popped and every pathway is relaxed. Each push
-and pop costs Theta(log V). Pushes are bounded by the number of relaxations
-that improve a distance, which is at most E, so the total is
-Theta((V + E) log V).
+Worst case is when the destination is the last building taken off the queue.
+Every building is pushed and popped and every pathway is checked. Each heap
+operation costs log V.
 
-Best case: the starting building is the destination. It is popped
-immediately, the search stops, and no pathway is relaxed, so the cost is
-Theta(1).
+Best case is when the start is the destination. It comes off the queue first
+and the search stops.
 
-Space: Theta(V + E) for the adjacency list, plus Theta(V) each for the
-distance array, the previous-building array, the finalised flags, and the
-heap.
+Space is the adjacency list, plus one array each for distances, previous
+buildings and finalised flags.
 
-## A* search
+## A*
 
-| Case | Bound |
-| --- | --- |
-| Worst | Theta((V + E) log V) |
-| Best | Theta(1) |
-| Space | Theta(V + E) |
+Same bounds as Dijkstra. The heuristic changes which buildings come off the
+queue first, not how much each step costs. The heuristic itself is Theta(1):
+one subtraction, two multiplications and a square root.
 
-A* has the same bounds as Dijkstra. It differs in the order it removes
-buildings from the queue, not in the amount of work each step costs. The
-heuristic is the straight-line distance between two buildings computed from
-their x and y values, which is Theta(1) to evaluate.
+In practice A* looks at fewer buildings than Dijkstra, but that is a constant
+factor on a graph this size, not a different bound. It has to be measured, by
+counting how many buildings each one takes off the queue.
 
-The worst case occurs when the heuristic gives no useful information and A*
-expands the same buildings Dijkstra does. In practice it expands fewer,
-because the heuristic pushes the search towards the destination. That
-difference is a constant factor on this dataset, not a change in the bound,
-which is why it has to be measured rather than derived. The measurement is
-the number of buildings each algorithm removes from the queue for the same
-route request.
-
-The heuristic never overestimates the remaining distance, because no pathway
-in the dataset is shorter than the straight-line distance between the two
-buildings it connects. That is checked for all 151 pathways. An admissible
-heuristic is what guarantees A* returns the same shortest distance Dijkstra
-does.
+The heuristic never overestimates, because no pathway is shorter than the
+straight-line distance between the two buildings it joins. This was checked for
+all 151 pathways. That is what makes A* return the same shortest distance as
+Dijkstra.

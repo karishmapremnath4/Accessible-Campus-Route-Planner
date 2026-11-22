@@ -24,6 +24,22 @@ struct Edge {
     bool isIndoor;      // true if the route runs through the campus tunnels
 };
 
+// What the user asked for.
+//   STANDARD          the shortest route, whatever it uses
+//   NO_STAIRS         a route that never uses steps
+//   INDOOR_PREFERRED  a route that favours the tunnels, used in bad weather
+enum Preference {
+    STANDARD = 1,
+    NO_STAIRS = 2,
+    INDOOR_PREFERRED = 3
+};
+
+// Weight applied to an outdoor pathway under INDOOR_PREFERRED. A tunnel is
+// usually longer than the walk above it, so without this the search would
+// never choose one. 1.5 makes a tunnel win when it is less than half again
+// as long as the surface route.
+const double OUTDOOR_WEIGHT = 1.5;
+
 // The campus graph. adj[i] holds every pathway leading out of building i.
 struct Graph {
     DynamicArray<Building> buildings;
@@ -35,5 +51,16 @@ struct Graph {
 bool loadCampusData(const std::string& buildingsFile,
                     const std::string& pathwaysFile,
                     Graph& g);
+
+// True if the search is allowed to use this pathway under the preference.
+bool isPathAccessible(const Edge& e, Preference pref);
+
+// What this pathway costs the search. Always its real distance, except under
+// INDOOR_PREFERRED where an outdoor pathway is weighted so tunnels win.
+double pathCost(const Edge& e, Preference pref);
+
+// Straight-line distance between two buildings, in meters. Used by A* to
+// estimate how far is left to go.
+double heuristic(const Graph& g, int from, int to);
 
 #endif
