@@ -83,11 +83,13 @@ Destination building (name or code): EXP
 Preference: 1 = shortest, 2 = no stairs, 3 = prefer tunnels: 1
 
 Route:
-1. Snell Library (SL)
-     530 m, has stairs
-2. Interdisciplinary Science and Engineering Complex (ISEC)
-     138 m
-3. EXP (EXP)
+Snell Library (SL)
+   | 530 m, has stairs
+   v
+Interdisciplinary Science and Engineering Complex (ISEC)
+   | 138 m
+   v
+EXP (EXP)
 Total distance: 668 m
 ```
 
@@ -98,13 +100,16 @@ Destination building (name or code): EXP
 Preference: 1 = shortest, 2 = no stairs, 3 = prefer tunnels: 2
 
 Route:
-1. Snell Library (SL)
-      86 m, through a tunnel
-2. Curry Student Center (CSC)
-     348 m
-3. Badger and Rosen SquashBusters Center (SB)
-     250 m
-4. EXP (EXP)
+Snell Library (SL)
+   | 86 m, through a tunnel
+   v
+Curry Student Center (CSC)
+   | 348 m
+   v
+Badger and Rosen SquashBusters Center (SB)
+   | 250 m
+   v
+EXP (EXP)
 Total distance: 684 m
 ```
 
