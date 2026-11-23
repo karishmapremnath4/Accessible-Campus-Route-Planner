@@ -6,10 +6,15 @@ RouteResult dijkstra(const Graph& g, int start, int destination, Preference pref
     const double INF = std::numeric_limits<double>::infinity();
     int n = g.buildings.size;
 
-    DynamicArray<double> cost;      // weighted cost from start; what the search minimizes
-    DynamicArray<int> prev;         // previous building on the best route
-    DynamicArray<Edge> prevEdge;    // pathway used to reach each building
-    DynamicArray<bool> done;        // finalized flags
+    RouteResult result;
+    if (start < 0 || start >= n || destination < 0 || destination >= n) {
+        return result;
+    }
+
+    DynamicArray<double> cost;
+    DynamicArray<int> prev;
+    DynamicArray<Edge> prevEdge;
+    DynamicArray<bool> done;
     for (int i = 0; i < n; i++) {
         cost.push_back(INF);
         prev.push_back(-1);
@@ -18,7 +23,6 @@ RouteResult dijkstra(const Graph& g, int start, int destination, Preference pref
         done.push_back(false);
     }
 
-    RouteResult result;
     cost[start] = 0.0;
     MinHeap heap;
     heap.push(start, 0.0);
@@ -26,7 +30,7 @@ RouteResult dijkstra(const Graph& g, int start, int destination, Preference pref
     while (!heap.empty()) {
         HeapItem top = heap.pop();
         int u = top.building;
-        if (done[u]) continue;          // stale entry left in the heap
+        if (done[u]) continue;
         done[u] = true;
         result.buildingsExplored++;
         if (u == destination) break;
@@ -45,10 +49,9 @@ RouteResult dijkstra(const Graph& g, int start, int destination, Preference pref
     }
 
     if (!done[destination]) {
-        return result;                  // found stays false
+        return result;
     }
 
-    // Walk back from the destination, collecting buildings and pathways.
     DynamicArray<int> backBuildings;
     DynamicArray<Edge> backPathways;
     int at = destination;
@@ -59,13 +62,12 @@ RouteResult dijkstra(const Graph& g, int start, int destination, Preference pref
     }
     backBuildings.push_back(start);
 
-    // Reverse so the route runs from start to destination.
     for (int i = backBuildings.size - 1; i >= 0; i--) {
         result.buildings.push_back(backBuildings[i]);
     }
     for (int i = backPathways.size - 1; i >= 0; i--) {
         result.pathways.push_back(backPathways[i]);
-        result.distance += backPathways[i].distance;   // real distance, not the weighted cost
+        result.distance += backPathways[i].distance;
     }
     result.found = true;
     return result;

@@ -14,7 +14,6 @@ static void check(bool ok, const std::string& what) {
     }
 }
 
-// Building ids from the shipped data.
 static const int SNELL_LIBRARY = 0;
 static const int CURRY_STUDENT_CENTER = 1;
 static const int EXP = 9;
@@ -67,12 +66,22 @@ static void testNoStairsRouteHasNoStairs() {
     check(!anyStairs, "no pathway on the NO_STAIRS route has stairs");
 }
 
+static void testOutOfRangeBuilding() {
+    Graph g;
+    loadCampusData("data/buildings.csv", "data/pathways.csv", g);
+    RouteResult r = dijkstra(g, -1, SNELL_LIBRARY, STANDARD);
+    check(!r.found, "a start building below 0 is rejected");
+    r = dijkstra(g, SNELL_LIBRARY, 39, STANDARD);
+    check(!r.found, "a destination past the last building is rejected");
+}
+
 int main() {
     testSnellToCurryStandard();
     testSameStartAndDestination();
     testNoRouteFile();
     testStairsOnlyFile();
     testNoStairsRouteHasNoStairs();
+    testOutOfRangeBuilding();
     std::cout << checks << " checks, " << failures << " failed\n";
     return failures == 0 ? 0 : 1;
 }
