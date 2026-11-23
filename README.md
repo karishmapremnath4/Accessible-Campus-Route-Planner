@@ -58,6 +58,17 @@ g++ -std=c++17 -Wall -Wextra -I src -c src/graph.cpp -o graph.o
 Run the program from the top of the repository, because it reads its campus
 data from `data/` using relative paths.
 
+## Tests
+
+```
+g++ -std=c++17 -Wall -Wextra -I src -o run_tests tests/tests.cpp src/graph.cpp
+./run_tests
+```
+
+Run it from the top of the repository. It checks the loader, `MinHeap`,
+`DynamicArray` and the two test data files, prints a line for each failed
+check, and ends with a summary.
+
 ## Sample input and output
 
 Not yet available. A sample session will be added once the menu and the first
@@ -68,6 +79,7 @@ search algorithm are implemented.
 ```
 src/    C++ source files
 data/   campus building and pathway data files
+tests/  test program for the code in src/
 docs/   project proposal and reports
 ```
 
@@ -94,6 +106,8 @@ algorithms and the menu are not yet implemented.
 - [x] Repository created and branch structure set up
 - [x] Campus dataset prepared
 - [x] File loading and graph construction
+- [x] MinHeap, accessibility preferences and the A* heuristic
+- [x] Tests for the loader, MinHeap, DynamicArray and the test data files
 - [ ] Dijkstra's algorithm
 - [ ] A* search
 - [ ] Menu interface and input validation
@@ -112,7 +126,7 @@ Student Center across the plaza or through the tunnel, and both are kept.
 
 The data structures the routing algorithms use are implemented in this project
 rather than taken from the Standard Library. `DynamicArray` replaces
-`std::vector`, and the priority queue will be a binary min-heap rather than
+`std::vector`, and `MinHeap`, a binary min-heap, replaces
 `std::priority_queue`. The Standard Library is used only for console and file
 input and output, text, and the square root function.
 
@@ -121,9 +135,10 @@ input and output, text, and the square root function.
 - Eleven of the 151 distances are estimates rather than measurements: nine
   tunnel segments and the two routes over the ISEC pedestrian bridge, none of
   which OpenStreetMap maps. They are marked `estimated` in the `source` column.
-- Sixteen buildings are positioned at the centre of the building rather than at
-  an entrance, because OpenStreetMap records no entrance for them, so distances
-  involving them read slightly long.
+- Twenty-two buildings are positioned at the centre of the building rather
+  than at an entrance: six because OpenStreetMap records no entrance for them,
+  and the sixteen added later (ids 23 to 38). Distances involving them read
+  slightly long.
 - Only one pathway is marked as having stairs. Deriving the flag automatically
   from OpenStreetMap was attempted and abandoned, as described in the project
   report.

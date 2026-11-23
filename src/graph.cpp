@@ -15,11 +15,13 @@ static bool toInt(const std::string& s, int& out) {
         i = 1;
         if (s.size() == 1) return false;
     }
-    long value = 0;
+    // long long, not long: on Windows long is only 32 bits, so value * 10
+    // could overflow before the check below catches a number that is too big.
+    long long value = 0;
     for (; i < (int)s.size(); i++) {
         if (s[i] < '0' || s[i] > '9') return false;
         value = value * 10 + (s[i] - '0');
-        if (value > 2147483647L) return false;
+        if (value > 2147483647LL) return false;
     }
     out = (int)(negative ? -value : value);
     return true;
@@ -73,9 +75,60 @@ static int splitLine(const std::string& line, std::string out[], int maxFields) 
     return count;
 }
 
+// Reads one line. Removes the \r that Windows line endings leave at the end,
+// which would otherwise stick to the last field of the row.
+static bool readLine(std::istream& in, std::string& line) {
+    if (!std::getline(in, line)) {
+        return false;
+    }
+    if (!line.empty() && line[line.size() - 1] == '\r') {
+        line.erase(line.size() - 1);
+    }
+    return true;
+}
+
+// True if the line holds nothing but spaces and tabs, so it can be skipped
+// like an empty line.
+static bool isBlank(const std::string& line) {
+    for (int i = 0; i < (int)line.size(); i++) {
+        if (line[i] != ' ' && line[i] != '\t') {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Reads the first line of a file and checks that it is the header row the
+// loader expects. Without this check, a file missing its header would
+// silently lose its first row of data.
+static bool readHeader(std::istream& in, const std::string& file,
+                       const std::string& expected) {
+    std::string line;
+    if (!readLine(in, line)) {
+        std::cout << "Error: " << file << " is empty\n";
+        return false;
+    }
+    // Excel's "CSV UTF-8" format starts the file with three marker bytes, a
+    // byte order mark. They are not part of the header, so they are dropped.
+    if (line.compare(0, 3, "\xEF\xBB\xBF") == 0) {
+        line.erase(0, 3);
+    }
+    if (line != expected) {
+        std::cout << "Error: " << file << " line 1 should be the header row "
+                  << expected << "\n";
+        return false;
+    }
+    return true;
+}
+
 bool loadCampusData(const std::string& buildingsFile,
                     const std::string& pathwaysFile,
                     Graph& g) {
+    // Everything is read into a new graph and copied into g only once both
+    // files have loaded. A failed load leaves g as it was, and loading into a
+    // graph that already holds data replaces that data.
+    Graph loaded;
+
     std::ifstream bin(buildingsFile);
     if (!bin) {
         std::cout << "Error: could not open " << buildingsFile << "\n";
@@ -83,15 +136,14 @@ bool loadCampusData(const std::string& buildingsFile,
     }
 
     std::string line;
-    if (!std::getline(bin, line)) {           // skip the header row
-        std::cout << "Error: " << buildingsFile << " is empty\n";
+    if (!readHeader(bin, buildingsFile, "id,code,name,lat,lon,x,y")) {
         return false;
     }
 
     int lineNumber = 1;
-    while (std::getline(bin, line)) {
+    while (readLine(bin, line)) {
         lineNumber++;
-        if (line.empty()) {
+        if (isBlank(line)) {
             continue;
         }
 
@@ -114,26 +166,26 @@ bool loadCampusData(const std::string& buildingsFile,
             return false;
         }
 
-        if (b.id != g.buildings.size) {
+        if (b.id != loaded.buildings.size) {
             std::cout << "Error: " << buildingsFile << " line " << lineNumber
                       << " has id " << b.id << ", expected "
-                      << g.buildings.size << "\n";
+                      << loaded.buildings.size << "\n";
             return false;
         }
 
-        g.buildings.push_back(b);
+        loaded.buildings.push_back(b);
     }
 
-    if (g.buildings.size == 0) {
+    if (loaded.buildings.size == 0) {
         std::cout << "Error: " << buildingsFile << " has no buildings\n";
         return false;
     }
 
     // One empty list of pathways per building, so adj[i] exists before any
     // pathway is added to it.
-    for (int i = 0; i < g.buildings.size; i++) {
+    for (int i = 0; i < loaded.buildings.size; i++) {
         DynamicArray<Edge> empty;
-        g.adj.push_back(empty);
+        loaded.adj.push_back(empty);
     }
 
     std::ifstream pin(pathwaysFile);
@@ -142,15 +194,16 @@ bool loadCampusData(const std::string& buildingsFile,
         return false;
     }
 
-    if (!std::getline(pin, line)) {           // skip the header row
-        std::cout << "Error: " << pathwaysFile << " is empty\n";
+    if (!readHeader(pin, pathwaysFile,
+                    "from,to,distance,has_stairs,is_closed,is_indoor,source")) {
         return false;
     }
 
     lineNumber = 1;
-    while (std::getline(pin, line)) {
+    int pathwayCount = 0;
+    while (readLine(pin, line)) {
         lineNumber++;
-        if (line.empty()) {
+        if (isBlank(line)) {
             continue;
         }
 
@@ -178,11 +231,11 @@ bool loadCampusData(const std::string& buildingsFile,
             return false;
         }
 
-        if (from < 0 || from >= g.buildings.size ||
-            to   < 0 || to   >= g.buildings.size) {
+        if (from < 0 || from >= loaded.buildings.size ||
+            to   < 0 || to   >= loaded.buildings.size) {
             std::cout << "Error: " << pathwaysFile << " line " << lineNumber
                       << " refers to building " << from << " or " << to
-                      << ", which is outside 0 to " << g.buildings.size - 1
+                      << ", which is outside 0 to " << loaded.buildings.size - 1
                       << "\n";
             return false;
         }
@@ -198,6 +251,17 @@ bool loadCampusData(const std::string& buildingsFile,
             return false;
         }
 
+        // A* relies on this rule (see data/README.md): no pathway can be
+        // shorter than the straight line between its two buildings.
+        double straightLine = heuristic(loaded, from, to);
+        if (distance < straightLine) {
+            std::cout << "Error: " << pathwaysFile << " line " << lineNumber
+                      << " has distance " << distance << ", shorter than the "
+                      << straightLine << " m straight line between buildings "
+                      << from << " and " << to << "\n";
+            return false;
+        }
+
         Edge e;
         e.distance  = distance;
         e.hasStairs = (f[3] == "1");
@@ -209,12 +273,19 @@ bool loadCampusData(const std::string& buildingsFile,
         // One row of the file is one pathway, and a pathway can be walked in
         // either direction, so it is stored in both buildings' lists.
         e.to = to;
-        g.adj[from].push_back(e);
+        loaded.adj[from].push_back(e);
 
         e.to = from;
-        g.adj[to].push_back(e);
+        loaded.adj[to].push_back(e);
+        pathwayCount++;
     }
 
+    if (pathwayCount == 0) {
+        std::cout << "Error: " << pathwaysFile << " has no pathways\n";
+        return false;
+    }
+
+    g = loaded;
     return true;
 }
 

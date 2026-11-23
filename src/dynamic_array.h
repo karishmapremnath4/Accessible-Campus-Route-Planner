@@ -47,7 +47,9 @@ struct DynamicArray {
     }
 
     // Add an item at the end. If the block is full, allocate one twice as
-    // big, copy everything across, and free the old block.
+    // big, copy everything across, and free the old block. The new item is
+    // copied in before the old block is freed, because it may be one of this
+    // array's own elements, as in a.push_back(a[0]).
     void push_back(const T& item) {
         if (size == capacity) {
             int newCapacity = capacity * 2;
@@ -55,11 +57,13 @@ struct DynamicArray {
             for (int i = 0; i < size; i++) {
                 newData[i] = data[i];
             }
+            newData[size] = item;
             delete[] data;
             data = newData;
             capacity = newCapacity;
+        } else {
+            data[size] = item;
         }
-        data[size] = item;
         size++;
     }
 
