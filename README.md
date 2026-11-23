@@ -41,14 +41,6 @@ Course project for EECE 7205, Fundamentals of Computer Engineering.
 g++ -std=c++17 -Wall -Wextra -o planner src/*.cpp
 ```
 
-This is the command the finished program will be built with. It does not link
-yet, because `main()` has not been written. Until then the code that exists can
-be compiled on its own:
-
-```
-g++ -std=c++17 -Wall -Wextra -I src -c src/graph.cpp -o graph.o
-```
-
 ## Run
 
 ```
@@ -58,21 +50,67 @@ g++ -std=c++17 -Wall -Wextra -I src -c src/graph.cpp -o graph.o
 Run the program from the top of the repository, because it reads its campus
 data from `data/` using relative paths.
 
+A different pathways file can be given as an argument, which is how the
+no-route case is demonstrated:
+
+```
+./planner data/test_no_route_pathways.csv
+```
+
 ## Tests
 
 ```
-g++ -std=c++17 -Wall -Wextra -I src -o run_tests tests/tests.cpp src/graph.cpp
+g++ -std=c++17 -Wall -Wextra -I src -o run_tests tests/tests.cpp src/graph.cpp src/dijkstra.cpp
 ./run_tests
+
+g++ -std=c++17 -Wall -Wextra -I src -o run_route_tests tests/test_dijkstra.cpp src/graph.cpp src/dijkstra.cpp
+./run_route_tests
 ```
 
-Run it from the top of the repository. It checks the loader, `MinHeap`,
-`DynamicArray` and the two test data files, prints a line for each failed
-check, and ends with a summary.
+Run both from the top of the repository. The first checks the loader,
+`MinHeap`, `DynamicArray` and the test data files. The second checks the
+routes Dijkstra returns. Each prints a line for every failed check and ends
+with a summary.
 
 ## Sample input and output
 
-Not yet available. A sample session will be added once the menu and the first
-search algorithm are implemented.
+The same two buildings, with and without stairs allowed.
+
+```
+Choose an option: 2
+Starting building (name or code): SL
+Destination building (name or code): EXP
+Preference: 1 = shortest, 2 = no stairs, 3 = prefer tunnels: 1
+
+Route:
+1. Snell Library (SL)
+     530 m, has stairs
+2. Interdisciplinary Science and Engineering Complex (ISEC)
+     138 m
+3. EXP (EXP)
+Total distance: 668 m
+```
+
+```
+Choose an option: 2
+Starting building (name or code): SL
+Destination building (name or code): EXP
+Preference: 1 = shortest, 2 = no stairs, 3 = prefer tunnels: 2
+
+Route:
+1. Snell Library (SL)
+      86 m, through a tunnel
+2. Curry Student Center (CSC)
+     348 m
+3. Badger and Rosen SquashBusters Center (SB)
+     250 m
+4. EXP (EXP)
+Total distance: 684 m
+```
+
+The shortest route crosses the ISEC pedestrian bridge, which has stairs. With
+stairs excluded the program routes around at ground level instead, 16 m
+longer.
 
 ## Repository structure
 
@@ -95,8 +133,9 @@ request for the other member to review before merging.
 
 ## Current progress
 
-Iteration 3. The campus dataset and the file loading are complete. The search
-algorithms and the menu are not yet implemented.
+Iteration 3. The program compiles, runs, and finds routes between any two
+campus buildings under three accessibility preferences. A* search and the
+comparison between the two algorithms are left for iteration 4.
 
 - [x] Problem definition, features, expected inputs and outputs
 - [x] Data structures selected and justified
@@ -108,9 +147,9 @@ algorithms and the menu are not yet implemented.
 - [x] File loading and graph construction
 - [x] MinHeap, accessibility preferences and the A* heuristic
 - [x] Tests for the loader, MinHeap, DynamicArray and the test data files
-- [ ] Dijkstra's algorithm
+- [x] Dijkstra's algorithm
 - [ ] A* search
-- [ ] Menu interface and input validation
+- [x] Menu interface and input validation
 - [ ] Algorithm comparison
 
 The dataset holds 39 campus buildings and 151 pathways. It was prepared in
