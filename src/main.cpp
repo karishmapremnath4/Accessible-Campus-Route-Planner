@@ -4,9 +4,10 @@
 #include <iostream>
 #include <string>
 
-int main() {
+int main(int argc, char* argv[]) {
+    const char* pathways = (argc > 1) ? argv[1] : "data/pathways.csv";
     Graph g;
-    if (!loadCampusData("data/buildings.csv", "data/pathways.csv", g)) {
+    if (!loadCampusData("data/buildings.csv", pathways, g)) {
         return 1;
     }
 
