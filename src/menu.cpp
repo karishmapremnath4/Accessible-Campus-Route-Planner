@@ -113,10 +113,10 @@ void displayRoute(const Graph& g, const RouteResult& result) {
     std::cout << "\nRoute:\n";
     for (int i = 0; i < result.buildings.size; i++) {
         const Building& b = g.buildings[result.buildings[i]];
-        std::cout << (i + 1) << ". " << b.name << " (" << b.code << ")\n";
+        std::cout << b.name << " (" << b.code << ")\n";
         if (i < result.pathways.size) {
             const Edge& step = result.pathways[i];
-            std::cout << "     " << std::fixed << std::setprecision(0)
+            std::cout << "   | " << std::fixed << std::setprecision(0)
                       << step.distance << " m";
             if (step.hasStairs) {
                 std::cout << ", has stairs";
@@ -124,7 +124,7 @@ void displayRoute(const Graph& g, const RouteResult& result) {
             if (step.isIndoor) {
                 std::cout << ", through a tunnel";
             }
-            std::cout << "\n";
+            std::cout << "\n   v\n";
         }
     }
     std::cout << "Total distance: " << std::fixed << std::setprecision(0)
