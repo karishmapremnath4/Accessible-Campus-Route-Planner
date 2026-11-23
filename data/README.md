@@ -53,10 +53,10 @@ between them is the walk around the outside, not the way through.
     Library to Churchill Hall, where the routed figure did not match.
   - `estimated` - no measured source. 11 rows: the nine tunnels and the two
     routes over the ISEC bridge, none of which OpenStreetMap maps. Each tunnel
-    distance is the surface distance for the same pair plus 5 to 19 m (15 m
-    for most) for going down and back up, since a tunnel runs under the
-    buildings and cannot be shorter than the walk above. The two bridge routes
-    are estimates of the walk from Snell Library over the bridge to ISEC.
+    distance is the surface distance for the same pair plus 5 to 19 m for
+    going down and back up, since a tunnel runs under the buildings and
+    cannot be shorter than the walk above. The two bridge routes are
+    estimates of the walk from Snell Library over the bridge to ISEC.
 
 Ten pairs of buildings appear on two rows, because there are two different
 ways to make the trip. Snell Library to ISEC has a 530 m route with stairs and

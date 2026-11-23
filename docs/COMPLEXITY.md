@@ -64,9 +64,10 @@ copied into g once at the end, which is also Theta(V + E).
 Worst case is when the destination is the last building taken off the queue.
 Every pathway is checked. MinHeap cannot lower the priority of an item already
 in it, so a building is pushed again each time a shorter route to it is found,
-and the old entry is skipped when it comes off. The heap can therefore hold up
-to E items, and each heap operation costs log E, which is at most 2 log V. So
-the bound is still (V + E) log V.
+and the old entry is skipped when it comes off. Each pathway is stored in both
+directions, so the heap can hold up to 2E items, and each heap operation costs
+log 2E. Here 2E is less than V squared, so that is at most 2 log V, and the
+bound is still (V + E) log V.
 
 Best case is when the start is the destination. It comes off the queue first
 and the search stops, but the arrays for distances, previous buildings and
