@@ -108,3 +108,25 @@ with an error if one breaks the rule.
 - Building codes and the tunnel network: Northeastern University campus map.
 - Accessible entrances: Northeastern University Campus Accessibility map,
   July 2018.
+
+## Datasets for the algorithm comparison
+
+Three sizes are used for the experimental comparison in Iteration 4. The two
+smaller ones are taken from this same campus data, by keeping the first 15 and
+the first 25 buildings and every pathway where both ends are kept. Nothing was
+invented or generated.
+
+| Dataset | Buildings | Pathways | Pairs | Files |
+| --- | --- | --- | --- | --- |
+| Small | 15 | 46 | 105 | `campus_15_buildings.csv`, `campus_15_pathways.csv` |
+| Medium | 25 | 88 | 300 | `campus_25_buildings.csv`, `campus_25_pathways.csv` |
+| Full | 39 | 151 | 741 | `buildings.csv`, `pathways.csv` |
+
+Buildings were numbered outward from Snell Library when the dataset was built,
+so taking the first 15 or 25 gives the core of campus rather than a scattered
+selection. All three stay connected with stairs allowed and with stairs
+excluded, so every pair of buildings has a route in every dataset.
+
+Pairs is the number of distinct building pairs, which is the number of route
+requests in one full sweep of a dataset. A single route search is too fast to
+time reliably, so the comparison times a whole sweep and repeats it.
